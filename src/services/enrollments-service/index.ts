@@ -1,24 +1,35 @@
-import { request } from "@/utils/request";
+import { AddressEnrollment } from "@/protocols";
+import { getAddress } from "@/utils/cep-service";
 import { notFoundError } from "@/errors";
 import addressRepository, { CreateAddressParams } from "@/repositories/address-repository";
 import enrollmentRepository, { CreateEnrollmentParams } from "@/repositories/enrollment-repository";
 import { exclude } from "@/utils/prisma-utils";
 import { Address, Enrollment } from "@prisma/client";
-import { AxiosResponse } from "axios";
 
-type CetAddressFromCEP = {bairro: string, cidade: string, complemento: string, logradouro: string, uf: string}
-type AxiosCep= { bairro: string, cidade: string, cep: string, complemento: string, ddd: string, gia: string, ibge: string, localidade: string, logradouro: string, siafi: string, uf: string}
+async function getAddressFromCEP(cep: string): Promise<AddressEnrollment> {
+  const result = await getAddress(cep);
 
-async function getAddressFromCEP(cep: string): Promise<CetAddressFromCEP> {
-  const { data } = await request.get(`https://viacep.com.br/ws/${cep}/json/`) as AxiosResponse<AxiosCep>;
-
-  if (!data) {
-    throw notFoundError();
+  if (!result) {
+    throw notFoundError(); //lançar -> pro arquivo que chamou essa função
   }
 
-  const obj ={ bairro: data.bairro, cidade: data.localidade, complemento: data.complemento, logradouro: data.logradouro, uf: data.uf };
-  
-  return obj;
+  const {
+    bairro,
+    localidade,
+    uf,
+    complemento,
+    logradouro
+  } = result;
+
+  const address = {
+    bairro,
+    cidade: localidade,
+    uf,
+    complemento,
+    logradouro
+  };
+
+  return address;
 }
 
 async function getOneWithAddressByUserId(userId: number): Promise<GetOneWithAddressByUserIdResult> {
@@ -50,6 +61,12 @@ async function createOrUpdateEnrollmentWithAddress(params: CreateOrUpdateEnrollm
   const address = getAddressForUpsert(params.address);
 
   //TODO - Verificar se o CEP é válido
+
+  const result = await getAddressFromCEP(address.cep);
+  if (result.error) {
+    throw notFoundError();
+  }
+
   const newEnrollment = await enrollmentRepository.upsert(params.userId, enrollment, exclude(enrollment, "userId"));
 
   await addressRepository.upsert(newEnrollment.id, address, address);
