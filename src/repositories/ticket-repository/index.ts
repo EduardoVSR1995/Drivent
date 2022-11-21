@@ -1,5 +1,5 @@
 import { prisma } from "@/config";
-import { Ticket } from "@prisma/client";
+import { Ticket, TicketStatus } from "@prisma/client";
 
 async function listTypes() {
   return prisma.ticketType.findMany();
@@ -64,7 +64,7 @@ async function updatTicket(id: number) {
       id: id,
     },
     data: {
-      status: "PAID",
+      status: TicketStatus.PAID,
     } 
   });
 }

@@ -1,5 +1,6 @@
 import { AuthenticatedRequest } from "@/middlewares";
 import ticketsService from "@/services/tickets-service";
+import { TicketStatus } from "@prisma/client";
 import { Response } from "express";
 import httpStatus from "http-status";
 
@@ -42,7 +43,7 @@ export async function postTicket(req: AuthenticatedRequest, res: Response) {
     await ticketsService.postTiket({
       ticketTypeId: ticketTypeId,
       enrollmentId: user.id,
-      status: "RESERVED",
+      status: TicketStatus.RESERVED,
     });
 
     const tipeAndTicket = await ticketsService.getTicketUser(userId);
