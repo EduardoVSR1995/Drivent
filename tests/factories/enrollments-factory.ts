@@ -1,6 +1,6 @@
 import faker from "@faker-js/faker";
 import { generateCPF, getStates } from "@brazilian-utils/brazilian-utils";
-import { User } from "@prisma/client";
+import { Hotel, User } from "@prisma/client";
 
 import { createUser } from "./users-factory";
 import { prisma } from "@/config";
@@ -40,4 +40,23 @@ export function createhAddressWithCEP() {
     cidade: "São Paulo",
     uf: "SP",
   };
+}
+
+export async function createRoom(hotel: Hotel) {
+  return prisma.room.create({
+    data: {
+      name: faker.name.findName(),
+      capacity: Number(faker.random.numeric()),
+      hotelId: hotel.id,
+    }
+  });
+}
+
+export async function createHotel() {
+  return prisma.hotel.create({
+    data: {
+      name: faker.name.findName(),
+      image: faker.image.imageUrl(),
+    }
+  });
 }
