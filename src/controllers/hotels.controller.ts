@@ -11,7 +11,7 @@ export async function getAllHotels(req: AuthenticatedRequest, res: Response) {
   try {
     const ticket = await ticketService.getTicketByUserId(userId);
     
-    if(ticket.status !== TicketStatus.PAID) return res.sendStatus(httpStatus.UNAUTHORIZED);
+    if(ticket.status !== TicketStatus.PAID || !ticket.TicketType.includesHotel ) return res.sendStatus(httpStatus.UNAUTHORIZED);
 
     const hotels = await hotelsService.getAllHotels();
 
@@ -32,11 +32,11 @@ export async function getRoom(req: AuthenticatedRequest, res: Response) {
   try {
     const ticket = await ticketService.getTicketByUserId(userId);
     
-    if(ticket.status !== TicketStatus.PAID) return res.sendStatus(httpStatus.UNAUTHORIZED);
+    if(ticket.status !== TicketStatus.PAID || !ticket.TicketType.includesHotel ) return res.sendStatus(httpStatus.UNAUTHORIZED);
 
     const rooms = await hotelsService.getRoom(Number(hotelId));
 
-    if(rooms.length===0) return res.sendStatus(httpStatus.NOT_FOUND);
+    if(!rooms) return res.sendStatus(httpStatus.NOT_FOUND);
 
     return res.status(httpStatus.OK).send(rooms);
   } catch (error) {
