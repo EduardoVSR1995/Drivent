@@ -141,7 +141,7 @@ describe("GET /hotels/:hotelsId", () => {
     it("should respond with status 404 when given hotels doesnt exist", async () => {
       const user = await createUser();
       const token = await generateValidToken(user);
-      const enrollment = await createEnrollmentWithAddress (user);
+      const enrollment = await createEnrollmentWithAddress(user);
       const ticketType = await createTicketType(true);
       await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
 
@@ -153,7 +153,7 @@ describe("GET /hotels/:hotelsId", () => {
     it("should respond with status 200 and with hotels data", async () => {
       const user = await createUser();
       const token = await generateValidToken(user);
-      const enrollment = await createEnrollmentWithAddress (user);
+      const enrollment = await createEnrollmentWithAddress(user);
       const ticketType = await createTicketType(true);
       await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
       const hotel = await createHotel();
