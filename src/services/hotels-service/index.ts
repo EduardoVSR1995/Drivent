@@ -3,6 +3,7 @@ import enrollmentRepository from "@/repositories/enrollment-repository";
 import ticketRepository from "@/repositories/ticket-repository";
 import { notFoundError } from "@/errors";
 import { cannotListHotelsError } from "@/errors/cannot-list-hotels-error";
+import bookingRepository from "@/repositories/booking-repository";
 
 async function listHotels(userId: number) {
   //Tem enrollment?
@@ -35,7 +36,24 @@ async function getHotelsWithRooms(userId: number, hotelId: number) {
   return hotel;
 }
 
+async function getRoom(roomId: number) {
+  const room = await hotelRepository.findRoom(roomId);
+
+  if (!room) {
+    throw notFoundError();
+  }
+  return room;
+}
+
+async function getAllBookingRooms(roomId: number) {
+  const rooms = await bookingRepository.findManyBookingRoomId(roomId);
+
+  return rooms;
+}
+
 const hotelService = {
+  getAllBookingRooms,
+  getRoom,
   getHotels,
   getHotelsWithRooms,
 };

@@ -2,6 +2,8 @@ import { Response } from "express";
 import { AuthenticatedRequest } from "@/middlewares";
 import httpStatus from "http-status";
 import bookingService from "@/services/booking-service";
+import ticketService from "@/services/tickets-service";
+import hotelService from "@/services/hotels-service";
 
 export async function getBooking(req: AuthenticatedRequest, res: Response) {
   const { userId } = req;
@@ -27,13 +29,27 @@ export async function postBooking(req: AuthenticatedRequest, res: Response) {
   const { userId } = req;
 
   const { roomId } = req.body;
-  
-  if(!roomId) return res.sendStatus(httpStatus.BAD_REQUEST);
+
+  if(!roomId || roomId === String || roomId <= 0 ) return res.sendStatus(httpStatus.FORBIDDEN);
 
   try {
-    const booking = await bookingService.getBookingUserId(userId);
+    const bookingUser = await bookingService.getBookingUserIdEmpty(userId);
+
+    if(bookingUser) return res.sendStatus(httpStatus.FORBIDDEN);
+
+    const ticket = await ticketService.getTicketByUserId(userId);
     
-    return res.status(httpStatus.OK).send(booking);
+    if(ticket.TicketType.isRemote || !ticket.TicketType.includesHotel || ticket.status === "RESERVED" ) return res.sendStatus(httpStatus.FORBIDDEN);
+
+    const room = await hotelService.getRoom(roomId);
+    
+    const AllRooms = await hotelService.getAllBookingRooms(roomId);
+
+    if(AllRooms.length === room.capacity ) return res.sendStatus(httpStatus.FORBIDDEN);
+
+    const booking = await bookingService.createBooking(userId, roomId);
+
+    return res.status(httpStatus.OK).send({ bookingId: booking.id });
   } catch (error) {
     if (error.name === "NotFoundError") {
       return res.sendStatus(httpStatus.NOT_FOUND);
