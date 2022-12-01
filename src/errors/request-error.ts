@@ -2,7 +2,7 @@ import { RequestError } from "@/protocols";
 
 export function requestError(status: number, statusText: string): RequestError {
   return {
-    name: "",
+    name: "RequestError",
     data: null,
     status,
     statusText,
