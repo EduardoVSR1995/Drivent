@@ -46,9 +46,7 @@ async function getRoom(roomId: number) {
 }
 
 async function getAllBookingRooms(roomId: number) {
-  const rooms = await bookingRepository.findManyBookingRoomId(roomId);
-
-  return rooms;
+  return bookingRepository.findManyBookingRoomId(roomId);
 }
 
 const hotelService = {

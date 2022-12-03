@@ -1,4 +1,4 @@
-import { notFoundError } from "@/errors";
+import { notFoundError, unauthorizedError } from "@/errors";
 import bookingRepository from "@/repositories/booking-repository";
 
 async function getBookingUserId(userId: number) {
@@ -10,6 +10,19 @@ async function getBookingUserId(userId: number) {
   return bookingRoons;
 }
 
+async function findBookingId(id: number) {
+  const booking = await bookingRepository.findUniqueBookingId(id);
+
+  if (!booking) {
+    throw unauthorizedError();
+  }
+  return booking;
+}
+
+async function updateBookingId(id: number, roomId: number) {
+  return bookingRepository.updateBookingId(id, roomId);
+}
+
 async function getBookingUserIdEmpty(userId: number) {
   return bookingRepository.getBookingUser(userId);
 }
@@ -19,6 +32,8 @@ async function createBooking(userId: number, roomId: number) {
 }
 
 const bookingService = {
+  updateBookingId,
+  findBookingId,
   createBooking,
   getBookingUserId,
   getBookingUserIdEmpty,  

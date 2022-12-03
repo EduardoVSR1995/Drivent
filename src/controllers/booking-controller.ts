@@ -21,7 +21,6 @@ export async function getBooking(req: AuthenticatedRequest, res: Response) {
     if (error.name === "NotFoundError") {
       return res.sendStatus(httpStatus.NOT_FOUND);
     }
-    return res.sendStatus(httpStatus.FORBIDDEN);
   }
 }
 
@@ -54,6 +53,39 @@ export async function postBooking(req: AuthenticatedRequest, res: Response) {
     if (error.name === "NotFoundError") {
       return res.sendStatus(httpStatus.NOT_FOUND);
     }
-    return res.sendStatus(httpStatus.FORBIDDEN);
+  }
+}
+
+export async function putBooking(req: AuthenticatedRequest, res: Response) {
+  const { userId } = req;
+
+  const { roomId } = req.body;
+
+  const bookingId = Number(req.params.bookingId);
+
+  if(!roomId || !bookingId || roomId === String || roomId <= 0 ) return res.sendStatus(httpStatus.FORBIDDEN);
+
+  try {
+    const room = await hotelService.getRoom(roomId);
+
+    const bookingUser = await bookingService.findBookingId(bookingId);
+
+    const AllRooms = await hotelService.getAllBookingRooms(roomId);
+    
+    if(AllRooms.length === room.capacity ) return res.sendStatus(httpStatus.FORBIDDEN);
+
+    if(userId !== bookingUser.userId) return res.sendStatus(httpStatus.FORBIDDEN);
+
+    await bookingService.updateBookingId(bookingId, roomId);
+
+    return res.status(httpStatus.OK).send({ bookingId: bookingId });
+  } catch (error) {
+    if (error.name === "UnauthorizedError") {
+      return res.sendStatus(httpStatus.FORBIDDEN);
+    }
+
+    if (error.name === "NotFoundError") {
+      return res.sendStatus(httpStatus.NOT_FOUND);
+    }
   }
 }
